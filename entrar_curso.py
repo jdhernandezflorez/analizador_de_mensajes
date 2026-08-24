@@ -1,12 +1,13 @@
-"""Entra al curso que elija el usuario y luego a una de sus lecciones.
+"""Entra al curso que elija el usuario, abre la primera lección y recorre las demás.
 
 Reutiliza la sesión de login.py y solo vuelve a autenticar si expiró.
+No pregunta la lección: entra a la primera y pulsa «Siguiente» hasta la clase
+«Felicidades! ¡Has completado el curso!».
 
 Uso:
     python entrar_curso.py
     python entrar_curso.py --curso "Fundamentos De Power Bi"
-    python entrar_curso.py --curso 161029 --leccion "¿Qué es Power BI?"
-    python entrar_curso.py --curso 161029 --leccion 6 --headless
+    python entrar_curso.py --curso 161029 --headless
 """
 
 from __future__ import annotations
@@ -27,6 +28,10 @@ SELECTOR_SECCION = (
 )
 SELECTOR_LISTA = "div.overflow-hidden.rounded-b-lg.transition-height.duration-300"
 SELECTOR_LECCION = "li[data-id]"
+SELECTOR_TITULO = "h2.content__title"
+SELECTOR_SIGUIENTE = 'a[data-tippy-content="Siguiente"]'
+TITULO_FINAL = "Felicidades! ¡Has completado el curso!"
+MAX_CLASES = 500
 
 
 def normalizar(texto: str) -> str:
@@ -65,34 +70,31 @@ def coincidencias(
     ]
 
 
-def elegir_item(
-    items: list[dict[str, str]],
+def elegir_curso(
+    cursos: list[dict[str, str]],
     consulta: str | None,
-    campo_nombre: str,
-    etiqueta: str,
-    mostrar,
 ) -> dict[str, str]:
     if consulta:
-        hallados = coincidencias(items, consulta, campo_nombre)
+        hallados = coincidencias(cursos, consulta, "nombre_curso")
         if len(hallados) == 1:
             return hallados[0]
         if not hallados:
-            raise SystemExit(f"No se encontró {etiqueta} que coincida con: {consulta}")
+            raise SystemExit(f"No se encontró el curso que coincida con: {consulta}")
         print(f"Hay {len(hallados)} coincidencias para «{consulta}»:\n")
-        items = hallados
-        mostrar(items)
+        cursos = hallados
+        mostrar_cursos(cursos)
     else:
-        mostrar(items)
+        mostrar_cursos(cursos)
 
     while True:
         try:
             respuesta = input(
-                f"Escribe el número, parte del nombre o el data-id de {etiqueta}: "
+                "Escribe el número, parte del nombre o el data-id del curso: "
             ).strip()
         except EOFError:
-            raise SystemExit(f"No se recibió {etiqueta}") from None
+            raise SystemExit("No se recibió el curso") from None
 
-        hallados = coincidencias(items, respuesta, campo_nombre)
+        hallados = coincidencias(cursos, respuesta, "nombre_curso")
         if len(hallados) == 1:
             return hallados[0]
         if not hallados:
@@ -100,8 +102,8 @@ def elegir_item(
             continue
 
         print(f"\nHay {len(hallados)} coincidencias:\n")
-        items = hallados
-        mostrar(items)
+        cursos = hallados
+        mostrar_cursos(cursos)
 
 
 def cargar_cursos() -> list[dict[str, str]]:
@@ -178,15 +180,10 @@ def extraer_lecciones(page: Page) -> list[dict[str, str]]:
             const lista = seccion.querySelector(selectorLista) || seccion;
             for (const li of lista.querySelectorAll("li[data-id]")) {
               const enlace = li.querySelector("a.lesson__title, a[href]");
-              const duracion = (li.querySelector("small")?.innerText || "")
-                .replace(/^\\s*-\\s*/, "")
-                .trim();
               resultado.push({
                 data_id: li.getAttribute("data-id") || "",
                 titulo: (enlace?.innerText || li.innerText || "").trim(),
-                duracion,
                 seccion: tituloSeccion,
-                href: enlace?.getAttribute("href") || "",
               });
             }
           }
@@ -197,19 +194,6 @@ def extraer_lecciones(page: Page) -> list[dict[str, str]]:
     if not lecciones:
         raise SystemExit("El curso no tiene lecciones visibles en las secciones")
     return lecciones
-
-
-def mostrar_lecciones(lecciones: list[dict[str, str]]) -> None:
-    ancho = len(str(len(lecciones)))
-    seccion_actual = None
-    print("\nLecciones del curso:\n")
-    for indice, leccion in enumerate(lecciones, start=1):
-        if leccion["seccion"] != seccion_actual:
-            seccion_actual = leccion["seccion"]
-            print(f"  {seccion_actual}")
-        extra = f"  ({leccion['duracion']})" if leccion.get("duracion") else ""
-        print(f"  {indice:>{ancho}}. {leccion['titulo']}{extra}")
-    print()
 
 
 def expandir_seccion(page: Page, data_id: str) -> None:
@@ -256,17 +240,78 @@ def entrar_a_leccion(page: Page, leccion: dict[str, str]) -> None:
             ) from None
 
 
+def es_clase_final(titulo: str) -> bool:
+    return normalizar(TITULO_FINAL) in normalizar(titulo)
+
+
+def leer_titulo_clase(page: Page) -> str:
+    try:
+        page.wait_for_selector(SELECTOR_TITULO, timeout=20_000)
+    except PlaywrightTimeoutError:
+        page.screenshot(path=str(RAIZ / "titulo_clase_no_encontrado.png"))
+        raise SystemExit(
+            "No apareció el título de la clase. "
+            "Revisa la captura titulo_clase_no_encontrado.png"
+        ) from None
+    return page.locator(SELECTOR_TITULO).inner_text().strip()
+
+
+def ir_a_siguiente_clase(page: Page) -> bool:
+    boton = page.locator(SELECTOR_SIGUIENTE).first
+    if boton.count() == 0:
+        return False
+
+    href = (boton.get_attribute("href") or "").strip()
+    if href in ("", "#"):
+        return False
+
+    url_antes = page.url
+    boton.click()
+    try:
+        page.wait_for_url(lambda url: url != url_antes, timeout=20_000)
+    except PlaywrightTimeoutError:
+        page.screenshot(path=str(RAIZ / "siguiente_clase_fallida.png"))
+        raise SystemExit(
+            "Se pulsó «Siguiente» pero no cambió la clase. "
+            "Revisa la captura siguiente_clase_fallida.png"
+        ) from None
+    return True
+
+
+def recorrer_clases(page: Page) -> None:
+    visitadas = 0
+    while True:
+        titulo = leer_titulo_clase(page)
+        visitadas += 1
+        print(f"Clase {visitadas}: {titulo}")
+        print(f"URL actual: {page.url}")
+
+        if es_clase_final(titulo):
+            print("Llegó a la clase final del curso")
+            return
+
+        if visitadas >= MAX_CLASES:
+            raise SystemExit(
+                f"Se recorrieron {MAX_CLASES} clases sin encontrar "
+                f"«{TITULO_FINAL}»"
+            )
+
+        if not ir_a_siguiente_clase(page):
+            page.screenshot(path=str(RAIZ / "sin_boton_siguiente.png"))
+            raise SystemExit(
+                "No hay botón «Siguiente» y aún no es la clase final. "
+                f"Último título: {titulo}. "
+                "Revisa la captura sin_boton_siguiente.png"
+            )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Entra a un curso y a una de sus lecciones."
+        description="Entra a un curso, abre la primera lección y recorre las demás."
     )
     parser.add_argument(
         "--curso",
         help="número, nombre (o parte) o data-id del curso",
-    )
-    parser.add_argument(
-        "--leccion",
-        help="número, nombre (o parte) o data-id de la lección",
     )
     parser.add_argument(
         "--headless",
@@ -286,13 +331,7 @@ def main() -> int:
     args = parser.parse_args()
 
     cursos = cargar_cursos()
-    curso = elegir_item(
-        cursos,
-        args.curso,
-        "nombre_curso",
-        "el curso",
-        mostrar_cursos,
-    )
+    curso = elegir_curso(cursos, args.curso)
     print(f"Entrando a: {curso['nombre_curso']} (data-id {curso['data_id']})")
 
     with sync_playwright() as p:
@@ -312,21 +351,13 @@ def main() -> int:
 
             esperar_secciones(page)
             lecciones = extraer_lecciones(page)
-            leccion = elegir_item(
-                lecciones,
-                args.leccion,
-                "titulo",
-                "la lección",
-                mostrar_lecciones,
-            )
+            primera = lecciones[0]
             print(
-                f"Entrando a: {leccion['titulo']} "
-                f"[{leccion['seccion']}] (data-id {leccion['data_id']})"
+                f"Entrando a la primera lección: {primera['titulo']} "
+                f"[{primera['seccion']}]"
             )
-            entrar_a_leccion(page, leccion)
-
-            print("Lección abierta")
-            print(f"URL actual: {page.url}")
+            entrar_a_leccion(page, primera)
+            recorrer_clases(page)
 
             if args.mantener_abierto:
                 input("Presiona Enter para cerrar el navegador...")
