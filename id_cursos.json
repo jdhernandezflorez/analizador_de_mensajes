@@ -1,0 +1,382 @@
+{
+  "cursos": [
+    {
+      "data_id": "218605",
+      "nombre_curso": "Comienza Aqui"
+    },
+    {
+      "data_id": "218607",
+      "nombre_curso": "Preguntas Frecuentes"
+    },
+    {
+      "data_id": "229619",
+      "nombre_curso": "Certificacion Mec"
+    },
+    {
+      "data_id": "249260",
+      "nombre_curso": "Grabaciones Clases En Vivo Con Experto"
+    },
+    {
+      "data_id": "161029",
+      "nombre_curso": "Fundamentos De Power Bi"
+    },
+    {
+      "data_id": "161117",
+      "nombre_curso": "Fundamentos De Dax"
+    },
+    {
+      "data_id": "161118",
+      "nombre_curso": "Diseno De Dashboards"
+    },
+    {
+      "data_id": "161119",
+      "nombre_curso": "Dominando Power Query Y El Modelado De Datos"
+    },
+    {
+      "data_id": "164238",
+      "nombre_curso": "Dominando Dax"
+    },
+    {
+      "data_id": "249966",
+      "nombre_curso": "Power Bi Service"
+    },
+    {
+      "data_id": "161006",
+      "nombre_curso": "Biblioteca De Templates"
+    },
+    {
+      "data_id": "161133",
+      "nombre_curso": "Business Cases"
+    },
+    {
+      "data_id": "161136",
+      "nombre_curso": "Clases En Vivo Power Bi"
+    },
+    {
+      "data_id": "161163",
+      "nombre_curso": "Acelerador De Carrera Con Power Bi"
+    },
+    {
+      "data_id": "254275",
+      "nombre_curso": "Figma Para Dashboards"
+    },
+    {
+      "data_id": "162424",
+      "nombre_curso": "Guia Infalible De Kpis"
+    },
+    {
+      "data_id": "246867",
+      "nombre_curso": "Primeros Pasos En Inteligencia Artificial"
+    },
+    {
+      "data_id": "243258",
+      "nombre_curso": "Aplicaciones Con Inteligencia Artificial"
+    },
+    {
+      "data_id": "243260",
+      "nombre_curso": "Automatizacion De Agentes"
+    },
+    {
+      "data_id": "243262",
+      "nombre_curso": "Agentes De Ia Nivel Avanzado"
+    },
+    {
+      "data_id": "262446",
+      "nombre_curso": "Daxus Ia"
+    },
+    {
+      "data_id": "275852",
+      "nombre_curso": "Proyectos Con Lovable"
+    },
+    {
+      "data_id": "287974",
+      "nombre_curso": "Dominando Claude"
+    },
+    {
+      "data_id": "289105",
+      "nombre_curso": "Dominando Codex"
+    },
+    {
+      "data_id": "273562",
+      "nombre_curso": "Copilot Microsoft"
+    },
+    {
+      "data_id": "251202",
+      "nombre_curso": "Business Cases Ia"
+    },
+    {
+      "data_id": "259313",
+      "nombre_curso": "Prompts En La Practica"
+    },
+    {
+      "data_id": "250269",
+      "nombre_curso": "Grabaciones De Las Clases En Vivo Ia"
+    },
+    {
+      "data_id": "243263",
+      "nombre_curso": "Catalogo De Herramientas De Ia"
+    },
+    {
+      "data_id": "278966",
+      "nombre_curso": "Clases En Vivo Ia"
+    },
+    {
+      "data_id": "168738",
+      "nombre_curso": "Excel Basico"
+    },
+    {
+      "data_id": "169901",
+      "nombre_curso": "Excel Intermedio"
+    },
+    {
+      "data_id": "169984",
+      "nombre_curso": "Dashboards Profesionales Con Excel"
+    },
+    {
+      "data_id": "170699",
+      "nombre_curso": "Excel Avanzado Con Power Pivot"
+    },
+    {
+      "data_id": "170700",
+      "nombre_curso": "Excel Avanzado Visual Basic"
+    },
+    {
+      "data_id": "171388",
+      "nombre_curso": "Excel Para Tu Negocio"
+    },
+    {
+      "data_id": "170086",
+      "nombre_curso": "Clases En Vivo Master Excel"
+    },
+    {
+      "data_id": "170089",
+      "nombre_curso": "Semana De Excel En La Practica"
+    },
+    {
+      "data_id": "170090",
+      "nombre_curso": "Business Cases Excel"
+    },
+    {
+      "data_id": "171394",
+      "nombre_curso": "Biblioteca De Macros Para Copiar Y Pegar"
+    },
+    {
+      "data_id": "222173",
+      "nombre_curso": "Fundamentos De Python"
+    },
+    {
+      "data_id": "230044",
+      "nombre_curso": "Recursos Avanzados Del Lenguaje Python"
+    },
+    {
+      "data_id": "235556",
+      "nombre_curso": "Analisis De Datos Con Python"
+    },
+    {
+      "data_id": "239060",
+      "nombre_curso": "Grabacion De La Inmersion"
+    },
+    {
+      "data_id": "280799",
+      "nombre_curso": "Laboratorio De Proyectos Con Python"
+    },
+    {
+      "data_id": "239061",
+      "nombre_curso": "Automatizacion De Tareas Con Python"
+    },
+    {
+      "data_id": "239063",
+      "nombre_curso": "Desarrollo Web Con Python Y Flask"
+    },
+    {
+      "data_id": "239065",
+      "nombre_curso": "Business Cases Python"
+    },
+    {
+      "data_id": "239067",
+      "nombre_curso": "Grabaciones Clases En Vivo"
+    },
+    {
+      "data_id": "274118",
+      "nombre_curso": "Git Github"
+    },
+    {
+      "data_id": "281596",
+      "nombre_curso": "Fundamentos De Javascript"
+    },
+    {
+      "data_id": "225917",
+      "nombre_curso": "Fundamentos Sql"
+    },
+    {
+      "data_id": "230394",
+      "nombre_curso": "Sql Avanzado"
+    },
+    {
+      "data_id": "235562",
+      "nombre_curso": "Administracion De Banco De Datos"
+    },
+    {
+      "data_id": "281305",
+      "nombre_curso": "Fundamentos De Power Point"
+    },
+    {
+      "data_id": "243918",
+      "nombre_curso": "Sharepoint En La Practica"
+    },
+    {
+      "data_id": "264506",
+      "nombre_curso": "Dominando Power Apps"
+    },
+    {
+      "data_id": "274072",
+      "nombre_curso": "Dominando Power Automate"
+    },
+    {
+      "data_id": "264262",
+      "nombre_curso": "Introduccion A Notion"
+    },
+    {
+      "data_id": "287056",
+      "nombre_curso": "Bases De Datos Con Notion"
+    },
+    {
+      "data_id": "279880",
+      "nombre_curso": "Automatizaciones De Notion"
+    },
+    {
+      "data_id": "286755",
+      "nombre_curso": "Tableau"
+    },
+    {
+      "data_id": "264878",
+      "nombre_curso": "Liderazgo Personal"
+    },
+    {
+      "data_id": "266785",
+      "nombre_curso": "Motivar Y Desarrollar Personas"
+    },
+    {
+      "data_id": "270449",
+      "nombre_curso": "Adaptacion Y Estrategia"
+    },
+    {
+      "data_id": "270978",
+      "nombre_curso": "Estrategias Del Lider Del Futuro"
+    },
+    {
+      "data_id": "224336",
+      "nombre_curso": "Curso De Oratoria"
+    },
+    {
+      "data_id": "242919",
+      "nombre_curso": "Comunicacion Asertiva"
+    },
+    {
+      "data_id": "249901",
+      "nombre_curso": "Inteligencia Emocional"
+    },
+    {
+      "data_id": "264392",
+      "nombre_curso": "Networking Con Proposito Como Hablar Y Conectar En Espacios Sociales"
+    },
+    {
+      "data_id": "170995",
+      "nombre_curso": "Habilidades Blandas Con Expertos"
+    },
+    {
+      "data_id": "279204",
+      "nombre_curso": "Finanzas Personales"
+    },
+    {
+      "data_id": "285387",
+      "nombre_curso": "Gestion Del Estres"
+    },
+    {
+      "data_id": "288502",
+      "nombre_curso": "Primeros 90 Dias En Una Empresa"
+    },
+    {
+      "data_id": "161135",
+      "nombre_curso": "Linkedin Magnetico"
+    },
+    {
+      "data_id": "209202",
+      "nombre_curso": "Preparacion Para Procesos Selectivos"
+    },
+    {
+      "data_id": "255248",
+      "nombre_curso": "Productividad Y Gestion Del Tiempo"
+    },
+    {
+      "data_id": "287530",
+      "nombre_curso": "Estrategias De Carrera Construye Un Camino Desde El Proposito"
+    },
+    {
+      "data_id": "288503",
+      "nombre_curso": "Domina Tu Primer Empleo"
+    },
+    {
+      "data_id": "168468",
+      "nombre_curso": "Posicionamiento Profesional Con Expertos"
+    },
+    {
+      "data_id": "161810",
+      "nombre_curso": "Power Bi Descomplicado"
+    },
+    {
+      "data_id": "253142",
+      "nombre_curso": "Chatgpt Descomplicado"
+    },
+    {
+      "data_id": "161043",
+      "nombre_curso": "Power Point En La Practica"
+    },
+    {
+      "data_id": "178539",
+      "nombre_curso": "Lenguaje Sql Nivel Basico"
+    },
+    {
+      "data_id": "164850",
+      "nombre_curso": "Inteligencia Artificial Con Chatgpt"
+    },
+    {
+      "data_id": "278618",
+      "nombre_curso": "Ingles Principiante"
+    },
+    {
+      "data_id": "284195",
+      "nombre_curso": "Ingles Intermedio"
+    },
+    {
+      "data_id": "284559",
+      "nombre_curso": "Ingles Avanzado"
+    },
+    {
+      "data_id": "284898",
+      "nombre_curso": "Clase En Vivo Mayo 2026"
+    },
+    {
+      "data_id": "281512",
+      "nombre_curso": "Concurso De Testimonios"
+    },
+    {
+      "data_id": "274070",
+      "nombre_curso": "Onboarding"
+    },
+    {
+      "data_id": "274116",
+      "nombre_curso": "Seguridad Salud En El Trabajo"
+    }
+  ],
+  "total_cursos": 120,
+  "metadata": {
+    "descripcion": "JSON con los data-id y nombres reales de todos los cursos de Daxus LATAM",
+    "fuente": "Extraído de miembro.daxus.com - div[data-controller='grid']",
+    "estructura": {
+      "data_id": "Identificador único del curso (slug numérico)",
+      "nombre_curso": "Nombre del curso tal como aparece en el thumbnail"
+    },
+    "notas": "Los nombres fueron extraídos de las URLs de los enlaces dentro de cada card de curso. Cada data_id corresponde a un curso único en la plataforma."
+  }
+}
