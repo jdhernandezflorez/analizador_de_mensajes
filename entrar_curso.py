@@ -1,8 +1,12 @@
-"""Entra al curso que elija el usuario, abre la primera lección y recorre las demás.
+"""Entra al curso que elija el usuario, recorre las lecciones y guarda comentarios.
 
 Reutiliza la sesión de login.py y solo vuelve a autenticar si expiró.
-No pregunta la lección: entra a la primera y pulsa «Siguiente» hasta la clase
-«Felicidades! ¡Has completado el curso!».
+Entra a la primera lección, pulsa «Siguiente» hasta «Felicidades! ¡Has
+completado el curso!» y en cada clase junta los comentarios con
+data-depth="0" (incluye pulsar «Ver más»).
+
+El resultado queda en comentarios/<nombre_del_curso>.json, pensado para
+enviarlo después a una IA.
 
 Uso:
     python entrar_curso.py
@@ -15,11 +19,12 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-import unicodedata
+from pathlib import Path
 
 from playwright.sync_api import Page, TimeoutError as PlaywrightTimeoutError, sync_playwright
 
-from login import RAIZ, abrir_contexto, asegurar_sesion
+from login import abrir_contexto, asegurar_sesion
+from rutas import DIR_COMENTARIOS, RAIZ, nombre_archivo_curso, normalizar
 
 ARCHIVO_CURSOS = RAIZ / "id_cursos.json"
 SELECTOR_BANNER = "div.poster[data-id]"
@@ -30,13 +35,11 @@ SELECTOR_LISTA = "div.overflow-hidden.rounded-b-lg.transition-height.duration-30
 SELECTOR_LECCION = "li[data-id]"
 SELECTOR_TITULO = "h2.content__title"
 SELECTOR_SIGUIENTE = 'a[data-tippy-content="Siguiente"]'
+SELECTOR_COMENTARIO_RAIZ = 'div.comment[data-depth="0"]'
+SELECTOR_VER_MAS = "#comments__paginate"
 TITULO_FINAL = "Felicidades! ¡Has completado el curso!"
 MAX_CLASES = 500
-
-
-def normalizar(texto: str) -> str:
-    descompuesto = unicodedata.normalize("NFD", texto.casefold())
-    return "".join(c for c in descompuesto if unicodedata.category(c) != "Mn")
+MAX_VER_MAS = 500
 
 
 def coincidencias(
@@ -256,6 +259,85 @@ def leer_titulo_clase(page: Page) -> str:
     return page.locator(SELECTOR_TITULO).inner_text().strip()
 
 
+def guardar_json(ruta: Path, datos: dict) -> None:
+    ruta.parent.mkdir(parents=True, exist_ok=True)
+    temporal = ruta.with_suffix(".json.tmp")
+    temporal.write_text(
+        json.dumps(datos, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    temporal.replace(ruta)
+
+
+def expandir_comentarios(page: Page) -> None:
+    """Pulsa «Ver más» hasta que el botón desaparezca."""
+    try:
+        page.wait_for_selector("#comments", timeout=15_000)
+    except PlaywrightTimeoutError:
+        return
+
+    clics = 0
+    while clics < MAX_VER_MAS:
+        boton = page.locator(SELECTOR_VER_MAS)
+        if boton.count() == 0 or not boton.first.is_visible():
+            return
+
+        n_antes = page.locator(SELECTOR_COMENTARIO_RAIZ).count()
+        href_antes = boton.first.get_attribute("href") or ""
+        boton.first.scroll_into_view_if_needed()
+        boton.first.click()
+        clics += 1
+        try:
+            page.wait_for_function(
+                """([selector, n, href, selectorBoton]) => {
+                  const boton = document.querySelector(selectorBoton);
+                  const cantidad = document.querySelectorAll(selector).length;
+                  const hrefAhora = boton ? boton.getAttribute("href") || "" : "";
+                  return cantidad > n || !boton || hrefAhora !== href;
+                }""",
+                arg=[SELECTOR_COMENTARIO_RAIZ, n_antes, href_antes, SELECTOR_VER_MAS],
+                timeout=20_000,
+            )
+        except PlaywrightTimeoutError:
+            if page.locator(SELECTOR_VER_MAS).count() == 0:
+                return
+            print(
+                "El botón «Ver más» no cargó más comentarios; se continúa con lo visible",
+                file=sys.stderr,
+            )
+            return
+
+
+def extraer_comentarios_raiz(page: Page) -> list[dict[str, str]]:
+    comentarios = page.evaluate(
+        """(selector) => {
+          return [...document.querySelectorAll(selector)].map((el) => ({
+            id: (el.id || "").replace(/^comment_/, ""),
+            autor: el.querySelector(".comment__user span.font-semibold")
+              ?.innerText?.trim() || "",
+            fecha: el.querySelector("time")?.getAttribute("datetime") || "",
+            texto: (el.querySelector(".comment__content")?.innerText || "").trim(),
+          }));
+        }""",
+        SELECTOR_COMENTARIO_RAIZ,
+    )
+    unicos: list[dict[str, str]] = []
+    vistos: set[str] = set()
+    for comentario in comentarios:
+        clave = comentario.get("id") or ""
+        if clave and clave in vistos:
+            continue
+        if clave:
+            vistos.add(clave)
+        unicos.append(comentario)
+    return unicos
+
+
+def recoger_comentarios_clase(page: Page) -> list[dict[str, str]]:
+    expandir_comentarios(page)
+    return extraer_comentarios_raiz(page)
+
+
 def ir_a_siguiente_clase(page: Page) -> bool:
     boton = page.locator(SELECTOR_SIGUIENTE).first
     if boton.count() == 0:
@@ -278,13 +360,24 @@ def ir_a_siguiente_clase(page: Page) -> bool:
     return True
 
 
-def recorrer_clases(page: Page) -> None:
+def recorrer_clases(page: Page, datos: dict, ruta: Path) -> None:
     visitadas = 0
     while True:
         titulo = leer_titulo_clase(page)
         visitadas += 1
         print(f"Clase {visitadas}: {titulo}")
         print(f"URL actual: {page.url}")
+
+        comentarios = recoger_comentarios_clase(page)
+        datos["clases"].append(
+            {
+                "titulo": titulo,
+                "url": page.url,
+                "comentarios": comentarios,
+            }
+        )
+        guardar_json(ruta, datos)
+        print(f"  {len(comentarios)} comentarios raíz guardados en {ruta.name}")
 
         if es_clase_final(titulo):
             print("Llegó a la clase final del curso")
@@ -305,9 +398,68 @@ def recorrer_clases(page: Page) -> None:
             )
 
 
+def recolectar_comentarios(
+    curso: str | None = None,
+    *,
+    headless: bool = False,
+    forzar_login: bool = False,
+    mantener_abierto: bool = False,
+) -> Path:
+    """Recorre el curso y guarda los comentarios. Devuelve la ruta del JSON."""
+    cursos = cargar_cursos()
+    elegido = elegir_curso(cursos, curso)
+    print(f"Entrando a: {elegido['nombre_curso']} (data-id {elegido['data_id']})")
+
+    ruta_salida = DIR_COMENTARIOS / nombre_archivo_curso(elegido["nombre_curso"])
+    datos = {
+        "curso": elegido["nombre_curso"],
+        "data_id": elegido["data_id"],
+        "clases": [],
+    }
+
+    with sync_playwright() as p:
+        navegador, contexto = abrir_contexto(
+            p,
+            headless=headless,
+            usar_sesion_guardada=not forzar_login,
+        )
+        page = contexto.new_page()
+
+        try:
+            asegurar_sesion(page, contexto, forzar=forzar_login)
+            esperar_banners(page)
+            entrar_al_banner(page, elegido)
+            print("Curso abierto")
+            print(f"URL actual: {page.url}")
+
+            esperar_secciones(page)
+            lecciones = extraer_lecciones(page)
+            primera = lecciones[0]
+            print(
+                f"Entrando a la primera lección: {primera['titulo']} "
+                f"[{primera['seccion']}]"
+            )
+            entrar_a_leccion(page, primera)
+            recorrer_clases(page, datos, ruta_salida)
+            print(f"Comentarios guardados en {ruta_salida}")
+
+            if mantener_abierto:
+                input("Presiona Enter para cerrar el navegador...")
+        except SystemExit as exc:
+            if exc.code not in (None, 0):
+                print(exc, file=sys.stderr)
+                raise SystemExit(1) from exc
+            raise
+        finally:
+            contexto.close()
+            navegador.close()
+
+    return ruta_salida
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Entra a un curso, abre la primera lección y recorre las demás."
+        description="Entra a un curso, recorre las lecciones y guarda comentarios."
     )
     parser.add_argument(
         "--curso",
@@ -330,45 +482,17 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    cursos = cargar_cursos()
-    curso = elegir_curso(cursos, args.curso)
-    print(f"Entrando a: {curso['nombre_curso']} (data-id {curso['data_id']})")
-
-    with sync_playwright() as p:
-        navegador, contexto = abrir_contexto(
-            p,
+    try:
+        recolectar_comentarios(
+            args.curso,
             headless=args.headless,
-            usar_sesion_guardada=not args.forzar_login,
+            forzar_login=args.forzar_login,
+            mantener_abierto=args.mantener_abierto,
         )
-        page = contexto.new_page()
-
-        try:
-            asegurar_sesion(page, contexto, forzar=args.forzar_login)
-            esperar_banners(page)
-            entrar_al_banner(page, curso)
-            print("Curso abierto")
-            print(f"URL actual: {page.url}")
-
-            esperar_secciones(page)
-            lecciones = extraer_lecciones(page)
-            primera = lecciones[0]
-            print(
-                f"Entrando a la primera lección: {primera['titulo']} "
-                f"[{primera['seccion']}]"
-            )
-            entrar_a_leccion(page, primera)
-            recorrer_clases(page)
-
-            if args.mantener_abierto:
-                input("Presiona Enter para cerrar el navegador...")
-        except SystemExit as exc:
-            if exc.code not in (None, 0):
-                print(exc, file=sys.stderr)
-                return 1
-            raise
-        finally:
-            contexto.close()
-            navegador.close()
+    except SystemExit as exc:
+        if exc.code not in (None, 0):
+            return 1 if isinstance(exc.code, int) else 1
+        raise
 
     return 0
 

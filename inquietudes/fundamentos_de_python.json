@@ -1,0 +1,62 @@
+{
+  "curso": "Fundamentos De Python",
+  "data_id": "222173",
+  "modelo": "openai/gpt-oss-20b",
+  "top_por_clase": 5,
+  "clases": [
+    {
+      "titulo": "Bienvenido(a) 🐍",
+      "url": "https://miembro.daxus.com/222173-fundamentos-de-python/4506845-bienvenido-a",
+      "total_comentarios": 165,
+      "inquietudes": [
+        {
+          "tema": "Problemas de acceso",
+          "tipo": "inconformidad",
+          "frecuencia": 4,
+          "ejemplos": [
+            "el enlace no funciona",
+            "me sale error al entrar",
+            "no puedo acceder a Discord"
+          ]
+        },
+        {
+          "tema": "Contenido faltante",
+          "tipo": "inconformidad",
+          "frecuencia": 2,
+          "ejemplos": [
+            "siento que faltan temas importantes",
+            "no cubre todo lo que quiero aprender",
+            "no aparece el material del módulo dos"
+          ]
+        },
+        {
+          "tema": "Horario de clases",
+          "tipo": "inquietud",
+          "frecuencia": 1,
+          "ejemplos": [
+            "¿cuándo empieza la clase?",
+            "quiero saber la fecha de inicio"
+          ]
+        },
+        {
+          "tema": "Cambio de profesor y continuidad del contenido",
+          "tipo": "inquietud",
+          "frecuencia": 1,
+          "ejemplos": [
+            "pregunta sobre cambio de docente",
+            "duda sobre continuidad del contenido",
+            "qué pasó con el profesor"
+          ]
+        },
+        {
+          "tema": "videos no marcados",
+          "tipo": "inquietud",
+          "frecuencia": 1,
+          "ejemplos": [
+            "pregunta por videos no marcados"
+          ]
+        }
+      ]
+    }
+  ]
+}
